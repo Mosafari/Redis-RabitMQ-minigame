@@ -41,16 +41,17 @@ def WhatHappened(WH):
 
 # rabitMQ producer
 def producer(queue, result, datenum, name, close=False, final=None):
+    # issue1 : body just accept str
     if queue == "Personality":
-        channel.basic_publish(exchange='dates', routing_key='Personality', body= {name+datenum:result})
+        channel.basic_publish(exchange='dates', routing_key='Personality', body= f'{name}{datenum}:{result}')
         if close :
             channel.close()
     elif queue == "Passion":
-        channel.basic_publish(exchange='dates', routing_key='Passion', body= {name+datenum:result})
+        channel.basic_publish(exchange='dates', routing_key='Passion', body= f'{name}{datenum}:{result}')
         if close :
             channel.close()
     elif queue == "Hobbie":
-        channel.basic_publish(exchange='dates', routing_key='Hobbie', body= {name+datenum:result})
+        channel.basic_publish(exchange='dates', routing_key='Hobbie', body= f'{name}{datenum}:{result}')
         if close :
             channel.close()
     elif queue == "finalresult":
@@ -72,9 +73,9 @@ def main():
     r.mset(PLinfo)
     Dates = ['Personality', 'Passion', 'Hobbie']
     for d in Dates :
+        print("Talk about ", d, " :")
         for p in PLinfo.keys():
             # one line chat
-            print("Talk about ", d, " :")
             chat = input(p+" : ")
             Red("set", chat, d, p)
         for pn in PLinfo.keys():
@@ -87,7 +88,19 @@ def main():
     
     print("End Of Chat! ")
 
-
+credentials =  pika.PlainCredentials('me', '1234')
+connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))
+channel = connection.channel()
+channel.exchange_declare('dates', durable=True, exchange_type='topic')
+channel.queue_declare(queue= 'date1')
+channel.queue_bind(exchange='dates', queue='date1', routing_key='Personality')
+channel.queue_declare(queue= 'date2')
+channel.queue_bind(exchange='dates', queue='date2', routing_key='Passion')
+channel.queue_declare(queue= 'date3')
+channel.queue_bind(exchange='dates', queue='date3', routing_key='Hobbie')
+channel.queue_declare(queue= 'finalresult')
+channel.queue_bind(exchange='dates', queue='finalresult', routing_key='finalresult')
+main()
     
     
     
