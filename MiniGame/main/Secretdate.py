@@ -42,18 +42,13 @@ def WhatHappened(WH):
 # rabitMQ producer
 def producer(queue, result, datenum, name, close=False, final=None):
     # issue1 : body just accept str
+    # issue2 : connection closed
     if queue == "Personality":
         channel.basic_publish(exchange='dates', routing_key='Personality', body= f'{name}{datenum}:{result}')
-        if close :
-            channel.close()
     elif queue == "Passion":
         channel.basic_publish(exchange='dates', routing_key='Passion', body= f'{name}{datenum}:{result}')
-        if close :
-            channel.close()
     elif queue == "Hobbie":
         channel.basic_publish(exchange='dates', routing_key='Hobbie', body= f'{name}{datenum}:{result}')
-        if close :
-            channel.close()
     elif queue == "finalresult":
         channel.basic_publish(exchange='dates', routing_key='finalresult', body= final)
         if close :
