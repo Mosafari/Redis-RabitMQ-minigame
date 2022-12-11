@@ -16,10 +16,6 @@ def callbackFunctionForHobbie(ch,method,properties,body):
     score[body.decode('utf-8')[:-8]]+=int(body.decode('utf-8')[-1])
     print('Result Of Hobbie Chat : ', body.decode('utf-8'))
     
-def callbackFunctionForResult(ch,method,properties,body):
-    score[body.decode('utf-8')[:-14]]=int(body.decode('utf-8')[-1])
-    print('Final Result : ', body.decode('utf-8'))
-    
 def WhatHappened(WH):
     # Attaching consumer callback functions to respective queues that we wrote above
     # issue3 : it goes to infinite loop to get message
@@ -34,9 +30,7 @@ def WhatHappened(WH):
     elif WH == "Passion":
         channel.basic_consume(queue='Passion', on_message_callback=callbackFunctionForPassion, auto_ack=True)
     elif WH == "Hobbie":
-        channel.basic_consume(queue='Hobbie', on_message_callback=callbackFunctionForHobbie, auto_ack=True)
-    elif WH == "finalresult":
-        channel.basic_consume(queue='finalresult', on_message_callback=callbackFunctionForResult, auto_ack=True)
+        channel.basic_consume(queue='Hobbie', on_message_callback=callbackFunctionForHobbie, auto_ack=True)  
     channel.start_consuming()
     # except KeyboardInterrupt:
     #     pass
@@ -68,3 +62,4 @@ if __name__ == '__main__':
     channel.queue_bind(exchange='dates', queue='finalresult', routing_key='finalresult')
     channel.basic_publish(exchange='dates', routing_key='finalresult', body= final)
     channel.close()
+    print("Final Result : ",final)
