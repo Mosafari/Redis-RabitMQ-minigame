@@ -29,6 +29,7 @@ def producer(queue, result, datenum, name, close=False, final=None):
 # main function
 # del numbers in py file (we can get the numbers from redis)
 def main():
+    global PLinfo
     player = ["PL1", "PL2"]
     PLinfo = []
     r = redis.Redis()
@@ -51,37 +52,42 @@ def main():
             producer(d, result, d, pn)
     channel.close()
     
-    print("End Of Chat! ")
-    # for i in Dates:
-    #     for j in player:
-    #         WhatHappened(i)
+    print("End Of Chat! \n\n")
 
 def callbackFunctionForResult(ch,method,properties,body):
     global finalresult
     finalresult = body.decode('utf-8')
-
-credentials =  pika.PlainCredentials('me', '1234')
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))
-channel = connection.channel()
-channel.exchange_declare('dates', durable=True, exchange_type='topic')
-channel.queue_declare(queue= 'Personality')
-channel.queue_bind(exchange='dates', queue='Personality', routing_key='Personality')
-channel.queue_declare(queue= 'Passion')
-channel.queue_bind(exchange='dates', queue='Passion', routing_key='Passion')
-channel.queue_declare(queue= 'Hobbie')
-channel.queue_bind(exchange='dates', queue='Hobbie', routing_key='Hobbie')
-main()
-# recive results from consumer
-try:
+    
+    
+if __name__ == '__main__':
     credentials =  pika.PlainCredentials('me', '1234')
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))
     channel = connection.channel()
     channel.exchange_declare('dates', durable=True, exchange_type='topic')
-    channel.basic_consume(queue='finalresult', on_message_callback=callbackFunctionForResult, auto_ack=True)
-    channel.start_consuming()
-except KeyboardInterrupt:
-    pass
-print(finalresult)
-    
-    
-    
+    channel.queue_declare(queue= 'Personality')
+    channel.queue_bind(exchange='dates', queue='Personality', routing_key='Personality')
+    channel.queue_declare(queue= 'Passion')
+    channel.queue_bind(exchange='dates', queue='Passion', routing_key='Passion')
+    channel.queue_declare(queue= 'Hobbie')
+    channel.queue_bind(exchange='dates', queue='Hobbie', routing_key='Hobbie')
+    main()
+    # recive results from consumer
+    try:
+        credentials =  pika.PlainCredentials('me', '1234')
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))
+        channel = connection.channel()
+        channel.exchange_declare('dates', durable=True, exchange_type='topic')
+        channel.basic_consume(queue='finalresult', on_message_callback=callbackFunctionForResult, auto_ack=True)
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        pass
+    channel.close()
+    if finalresult == "pass":
+        r = redis.Redis()
+        for i in PLinfo:
+            print("Here is my number :) \n", r.get[i])
+    else:
+        print("nice to meet you :)")
+        
+        
+        
