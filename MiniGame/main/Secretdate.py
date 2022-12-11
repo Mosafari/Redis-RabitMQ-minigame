@@ -23,27 +23,28 @@ def producer(queue, result, datenum, name, close=False, final=None):
         channel.basic_publish(exchange='dates', routing_key='Passion', body= f'{name}{datenum}:{result}')
     elif queue == "Hobbie":
         channel.basic_publish(exchange='dates', routing_key='Hobbie', body= f'{name}{datenum}:{result}')
-    elif queue == "finalresult":
-        channel.basic_publish(exchange='dates', routing_key='finalresult', body= final)
+
+# add  producer for result in consumer 
 
 # main function
+# del numbers in py file (we can get the numbers from redis)
 def main():
     player = ["PL1", "PL2"]
-    PLinfo = {}
+    PLinfo = []
+    r = redis.Redis()
     for i in player:
         nickname = input("Enter your nickname : ")
         number = input("Enter your number : ")
-        PLinfo[nickname] = number
-    r = redis.Redis()
-    r.mset(PLinfo)
+        PLinfo.append(nickname)
+        r.mset({nickname: number})
     Dates = ['Personality', 'Passion', 'Hobbie']
     for d in Dates :
         print("Talk about ", d, " :")
-        for p in PLinfo.keys():
+        for p in PLinfo:
             # one line chat
             chat = input(p+" : ")
             Red("set", chat, d, p)
-        for pn in PLinfo.keys():
+        for pn in PLinfo:
             # in next Update : this will send each message to another player then go to get score
             # results of the date
             result = input(pn+" : Do You Like Her/Him ? (1 -> Yes, 0 ->No) ")
@@ -66,8 +67,7 @@ channel.queue_declare(queue= 'Passion')
 channel.queue_bind(exchange='dates', queue='Passion', routing_key='Passion')
 channel.queue_declare(queue= 'Hobbie')
 channel.queue_bind(exchange='dates', queue='Hobbie', routing_key='Hobbie')
-channel.queue_declare(queue= 'finalresult')
-channel.queue_bind(exchange='dates', queue='finalresult', routing_key='finalresult')
+
 main()
     
     

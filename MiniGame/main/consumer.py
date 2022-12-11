@@ -55,3 +55,16 @@ if __name__ == '__main__':
         print(score)
         print(i," done")
         channel.close()
+    # send result to producer
+    if sum(list(score.values())) > 3 and (list(score.values())[0]> 1):
+        final = "pass"
+    else:
+        final = "fail"
+    credentials =  pika.PlainCredentials('me', '1234')
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=credentials))
+    channel = connection.channel()
+    channel.exchange_declare('dates', durable=True, exchange_type='topic')
+    channel.queue_declare(queue= 'finalresult')
+    channel.queue_bind(exchange='dates', queue='finalresult', routing_key='finalresult')
+    channel.basic_publish(exchange='dates', routing_key='finalresult', body= final)
+    channel.close()
